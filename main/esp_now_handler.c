@@ -16,7 +16,7 @@ static int success_count = 100; // 通信の成功状態を表すスコア。初
 
 static const char *TAG = "ESP_NOW_TX"; // ログ出力時に使用する識別名
 
-// 受信側である本体の固有識別番号のマックアドレス
+// 受信側である本体の固有識別番号のMacアドレス
 uint8_t PEER_MAC_ADDRESS[] = {0x90, 0x70, 0x69, 0x35, 0x38, 0xE8};
 
 // 送信処理が完了したときに自動で呼び出される関数。正しく送れたかを確認して処理を行う
@@ -28,7 +28,7 @@ void on_data_sent(const uint8_t *mac_addr, esp_now_send_status_t status) {
         if (success_count > 0) success_count--; // 送信失敗時はスコアを減らす
     }
 
-    // 通信成功率を0.0から1.0의 範囲で算出する
+    // 通信成功率を0.0から1.0の範囲で算出する
     float ratio = (float)success_count / HISTORY_WEIGHT;
 
     // 成功率に応じてLEDの色を計算する。成功率が1.0に近いほど緑、0に近いほど赤になる
@@ -72,7 +72,7 @@ void wifi_now_init(void) {
     }
     ESP_ERROR_CHECK(ret);
 
-    // ネットワーク基盤を初期化し、ワイファイを子機モードで起動する
+    // ネットワーク基盤を初期化し、Wi-Fiを子機モードで起動する
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -80,7 +80,7 @@ void wifi_now_init(void) {
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_start());
 
-    // 機器間通信であるイーエスピーナウを初期化する
+    // 機器間通信であるESP-NOWを初期化する
     ESP_ERROR_CHECK(esp_now_init());
     
     // データの送信が完了したときに動作するコールバック関数を登録する
@@ -88,7 +88,7 @@ void wifi_now_init(void) {
 
     // 送信相手となる本体側の情報を登録する準備を行う
     esp_now_peer_info_t peerInfo = {};
-    memcpy(peerInfo.peer_addr, PEER_MAC_ADDRESS, 6); // マックアドレスを設定する
+    memcpy(peerInfo.peer_addr, PEER_MAC_ADDRESS, 6); // Macアドレスを設定する
     peerInfo.channel = 0; // 受信側と同じ無線チャンネルを使用する
     peerInfo.encrypt = false; // 暗号化は行わない
 
@@ -104,7 +104,7 @@ void wifi_now_init(void) {
 
 // 引数で受け取ったコントローラーの入力データを実際に送信する関数
 void send_data_to_main(controller_data_t *data) {
-    // 登録されたマックアドレスに向けてイーエスピーナウ経由でデータを送信する
+    // 登録されたMacアドレスに向けてESP-NOW経由でデータを送信する
     esp_err_t result = esp_now_send(PEER_MAC_ADDRESS, (uint8_t *) data, sizeof(controller_data_t));
     if (result == ESP_OK) {
         // 送信指示が成功したときの処理
