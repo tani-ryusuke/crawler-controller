@@ -55,7 +55,9 @@ void led_init(void) {
         .resolution_hz = 10 * 1000 * 1000, 
         .flags.with_dma = false,
     };
+    // LEDストリップのRMTデバイスを新規作成する
     ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
+    // LEDストリップの表示内容をクリアして初期化する
     led_strip_clear(led_strip); 
 }
 
@@ -77,7 +79,7 @@ void wifi_now_init(void) {
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_start());
 
-    // 🚨【変更点①】本体の1chと同期させるため、コントローラーのWi-Fiチャネルを1chに強制固定
+    // 本体の1chと同期させるため、コントローラーのWi-Fiチャネルを1chに強制固定
     ESP_ERROR_CHECK(esp_wifi_set_promiscuous(true));
     ESP_ERROR_CHECK(esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE));
     ESP_ERROR_CHECK(esp_wifi_set_promiscuous(false));
@@ -91,19 +93,22 @@ void wifi_now_init(void) {
     // 4. 送信相手（ピア）の登録
     esp_now_peer_info_t peerInfo = {};
     memcpy(peerInfo.peer_addr, PEER_MAC_ADDRESS, 6);
-    peerInfo.channel = 1; // 🚨【変更点②】0から「1」に変更（明示的に1chのピアとして登録）
+    peerInfo.channel = 1; // （明示的に1chのピアとして登録）
     peerInfo.encrypt = false;
 
+    // 通信相手となるピアデバイスを登録する
     if (esp_now_add_peer(&peerInfo) != ESP_OK) {
         ESP_LOGE(TAG, "ピアの登録に失敗しました");
         return;
     }
-
+    
+    // LEDの初期化処理を呼び出す
     led_init();
 }
 
 // データを送信する関数
 void send_data_to_main(controller_data_t *data) {
+    // ESP-NOWを使用して指定したMACアドレスへデータを送信する
     esp_err_t result = esp_now_send(PEER_MAC_ADDRESS, (uint8_t *) data, sizeof(controller_data_t));
     if (result == ESP_OK) {
         //ESP_LOGI(TAG, "送信指示完了");
